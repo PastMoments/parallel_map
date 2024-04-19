@@ -1,0 +1,21 @@
+name = "parallel_map"
+version = "1.0.0"
+
+
+description = "A simple parallel map library in Gleam"
+licences = ["Apache-2.0"]
+repository = { type = "github", user = "PastMoments", repo = "parallel_map" }
+
+internal_modules = [
+  "task_repeater"
+]
+
+gleam = ">= 0.32.0"
+
+[dependencies]
+gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+gleam_erlang = ">= 0.25.0 and < 1.0.0"
+gleam_otp = ">= 0.10.0 and < 1.0.0"
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
