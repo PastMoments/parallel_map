@@ -3,7 +3,9 @@
 [![Package Version](https://img.shields.io/hexpm/v/parallel_map)](https://hex.pm/packages/parallel_map)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/parallel_map/)
 
-This is a simple package that adds a `iterator_pmap` and `list_pmap`,
+Note: This package only works for the erlang target.
+
+This is a simple gleam library that adds a `iterator_pmap` and `list_pmap`,
 which has a similar behaviour and interface as `iterator.map` and `list.map`,
 except it runs in parallel by spawning extra processes to do the work.
 
@@ -14,7 +16,7 @@ gleam add parallel_map
 import gleam/list
 import gleam/iterator
 import gleam/result
-import parallel_map
+import parallel_map.{MatchSchedulers, WorkerAmount}
 
 pub fn main() {
   let map_func = fn(a: Int) -> Int {a * a}
@@ -26,7 +28,7 @@ pub fn main() {
 
   // can be rewritten as
   iterator_input
-  |> parallel_map.iterator_pmap(map_func, 16, 100)
+  |> parallel_map.iterator_pmap(map_func, WorkerAmount(16), 100)
   |> iterator.map(result.unwrap(_, -1))
 
   let list_input = list.range(0, 1000)
@@ -36,7 +38,7 @@ pub fn main() {
 
   // can be rewritten as
   list_input
-  |> parallel_map.list_pmap(map_func, 16, 100)
+  |> parallel_map.list_pmap(map_func, MatchSchedulersOnline, 100)
   |> list.map(result.unwrap(_, -1))
 }
 ```
