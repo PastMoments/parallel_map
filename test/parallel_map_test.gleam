@@ -34,3 +34,22 @@ pub fn readme_iterator_test() {
       |> iterator.to_list,
   )
 }
+
+pub fn list_find_pmap_test() {
+  let find_map_func = fn(a: Int) -> Result(Int, Int) {
+    case a {
+      x if x > 500 -> Ok(x * 2)
+      _ -> Error(a)
+    }
+  }
+  let list_input = list.range(0, 1000)
+
+  let parallel_result =
+    list_input
+    |> parallel_map.list_find_pmap(find_map_func, WorkerAmount(16), 100)
+
+  let sequential_result = list_input |> list.find_map(find_map_func)
+
+  should.equal(parallel_result, sequential_result)
+  should.equal(parallel_result, Ok(1002))
+}
