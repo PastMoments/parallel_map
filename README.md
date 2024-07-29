@@ -9,6 +9,9 @@ This is a simple gleam library that adds a `iterator_pmap` and `list_pmap`,
 which has a similar behaviour and interface as `iterator.map` and `list.map`,
 except it runs in parallel by spawning extra processes to do the work.
 
+There is also `iterator_find_pmap` and `list_find_pmap` which stop the whole
+parallel execution after finding the first **Ok** value. 
+
 ```sh
 gleam add parallel_map
 ```
@@ -56,7 +59,7 @@ pub fn main() {
     |> parallel_map.list_find_pmap(find_map_func, WorkerAmount(16), 100)
 
   let sequential_result = list_input |> list.find_map(find_map_func)
-  // verify that both parallel_result and parallel_result is Ok(1002)
+  // verify that both parallel_result and parallel_result are Ok(1002)
 }
 ```
 
