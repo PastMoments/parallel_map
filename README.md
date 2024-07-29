@@ -40,6 +40,23 @@ pub fn main() {
   list_input
   |> parallel_map.list_pmap(map_func, MatchSchedulersOnline, 100)
   |> list.map(result.unwrap(_, -1))
+
+  // there is also parallel_map.list_find_pmap similar to list.find_map,
+  // which stop the works after finding the first Ok value.
+  let find_map_func = fn(a: Int) -> Result(Int, Int) {
+    case a {
+      x if x > 500 -> Ok(x * 2)
+      _ -> Error(a)
+    }
+  }
+  let list_input = list.range(0, 1000)
+
+  let parallel_result =
+    list_input
+    |> parallel_map.list_find_pmap(find_map_func, WorkerAmount(16), 100)
+
+  let sequential_result = list_input |> list.find_map(find_map_func)
+  // verify that both parallel_result and parallel_result is Ok(1002)
 }
 ```
 
