@@ -1,6 +1,5 @@
 import gleam/erlang/atom
 import gleam/erlang/process
-import gleam/io
 import gleam/iterator.{type Iterator}
 import gleam/list
 import gleam/result

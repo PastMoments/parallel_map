@@ -44,11 +44,33 @@ pub fn list_find_pmap_test() {
   }
   let list_input = list.range(0, 1000)
 
+  let sequential_result = list_input |> list.find_map(find_map_func)
+
   let parallel_result =
     list_input
     |> parallel_map.list_find_pmap(find_map_func, WorkerAmount(16), 100)
 
-  let sequential_result = list_input |> list.find_map(find_map_func)
+  should.equal(parallel_result, sequential_result)
+  should.equal(parallel_result, Ok(1002))
+}
+
+pub fn iterator_find_pmap_test() {
+  let find_map_func = fn(a: Int) -> Result(Int, Int) {
+    case a {
+      x if x > 500 -> Ok(x * 2)
+      _ -> Error(a)
+    }
+  }
+  let iterator_input = iterator.range(0, 1000)
+
+  let sequential_result =
+    iterator_input
+    |> iterator.find(fn(x) { x > 500 })
+    |> result.map(fn(x) { x * 2 })
+
+  let parallel_result =
+    iterator_input
+    |> parallel_map.iterator_find_pmap(find_map_func, MatchSchedulersOnline, 100)
 
   should.equal(parallel_result, sequential_result)
   should.equal(parallel_result, Ok(1002))

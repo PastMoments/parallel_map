@@ -10,7 +10,7 @@ which has a similar behaviour and interface as `iterator.map` and `list.map`,
 except it runs in parallel by spawning extra processes to do the work.
 
 There is also `iterator_find_pmap` and `list_find_pmap` which stop the whole
-parallel execution after finding the first **Ok** value. 
+parallel execution after finding the first **Ok** value.
 
 ```sh
 gleam add parallel_map
@@ -44,7 +44,10 @@ pub fn main() {
   |> parallel_map.list_pmap(map_func, MatchSchedulersOnline, 100)
   |> list.map(result.unwrap(_, -1))
 
-  // there is also parallel_map.list_find_pmap similar to list.find_map,
+
+  // there is also
+  //   parallel_map.iterator_find_pmap similar to iterator.find_map
+  //   parallel_map.list_find_pmap similar to list.find_map,
   // which stop the works after finding the first Ok value.
   let find_map_func = fn(a: Int) -> Result(Int, Int) {
     case a {
@@ -52,14 +55,22 @@ pub fn main() {
       _ -> Error(a)
     }
   }
-  let list_input = list.range(0, 1000)
 
-  let parallel_result =
-    list_input
-    |> parallel_map.list_find_pmap(find_map_func, WorkerAmount(16), 100)
+  iterator_input
+  |> iterator.find(fn(x) { x > 500 })
+  |> result.map(fn(x) { x * 2 })
 
-  let sequential_result = list_input |> list.find_map(find_map_func)
-  // verify that both parallel_result and parallel_result are Ok(1002)
+  // can be rewritten as
+  iterator_input
+  |> parallel_map.iterator_find_pmap(find_map_func, WorkerAmount(16), 100)
+
+
+  list_input
+  |> list.find_map(find_map_func)
+
+  // can be rewritten as
+  list_input
+  |> parallel_map.list_find_pmap(find_map_func, MatchSchedulersOnline, 100)
 }
 ```
 
