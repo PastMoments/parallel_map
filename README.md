@@ -49,6 +49,7 @@ pub fn main() {
   //   parallel_map.iterator_find_pmap similar to iterator.find_map
   //   parallel_map.list_find_pmap similar to list.find_map,
   // which stop the works after finding the first Ok value.
+
   let find_map_func = fn(a: Int) -> Result(Int, Int) {
     case a {
       x if x > 500 -> Ok(x * 2)
@@ -57,8 +58,7 @@ pub fn main() {
   }
 
   iterator_input
-  |> iterator.find(fn(x) { x > 500 })
-  |> result.map(fn(x) { x * 2 })
+  |> iterator.find_map(find_map_func)
 
   // can be rewritten as
   iterator_input

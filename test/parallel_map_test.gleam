@@ -63,14 +63,15 @@ pub fn iterator_find_pmap_test() {
   }
   let iterator_input = iterator.range(0, 1000)
 
-  let sequential_result =
-    iterator_input
-    |> iterator.find(fn(x) { x > 500 })
-    |> result.map(fn(x) { x * 2 })
+  let sequential_result = iterator_input |> iterator.find_map(find_map_func)
 
   let parallel_result =
     iterator_input
-    |> parallel_map.iterator_find_pmap(find_map_func, MatchSchedulersOnline, 100)
+    |> parallel_map.iterator_find_pmap(
+      find_map_func,
+      MatchSchedulersOnline,
+      100,
+    )
 
   should.equal(parallel_result, sequential_result)
   should.equal(parallel_result, Ok(1002))
