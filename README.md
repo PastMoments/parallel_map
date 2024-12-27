@@ -5,11 +5,11 @@
 
 Note: This package only works for the erlang target.
 
-This is a simple gleam library that adds a `iterator_pmap` and `list_pmap`,
-which has a similar behaviour and interface as `iterator.map` and `list.map`,
+This is a simple gleam library that adds a `yielder_pmap` and `list_pmap`,
+which has a similar behaviour and interface as `yielder.map` (from `gleam/yielder`) and `list.map` (from the standard library),
 except it runs in parallel by spawning extra processes to do the work.
 
-There is also `iterator_find_pmap` and `list_find_pmap` which stop the whole
+There is also `yielder_find_pmap` and `list_find_pmap` which stop the whole
 parallel execution after finding the first **Ok** value.
 
 ```sh
@@ -17,22 +17,22 @@ gleam add parallel_map
 ```
 ```gleam
 import gleam/list
-import gleam/iterator
+import gleam/yielder
 import gleam/result
 import parallel_map.{MatchSchedulers, WorkerAmount}
 
 pub fn main() {
   let map_func = fn(a: Int) -> Int {a * a}
 
-  let iterator_input = iterator.range(0, 1000)
+  let yielder_input = yielder.range(0, 1000)
 
-  iterator_input
-  |> iterator.map(map_func)
+  yielder_input
+  |> yielder.map(map_func)
 
   // can be rewritten as
-  iterator_input
-  |> parallel_map.iterator_pmap(map_func, WorkerAmount(16), 100)
-  |> iterator.map(result.unwrap(_, -1))
+  yielder_input
+  |> parallel_map.yielder_pmap(map_func, WorkerAmount(16), 100)
+  |> yielder.map(result.unwrap(_, -1))
 
   let list_input = list.range(0, 1000)
 
@@ -46,7 +46,7 @@ pub fn main() {
 
 
   // there is also
-  //   parallel_map.iterator_find_pmap similar to iterator.find_map
+  //   parallel_map.yielder_find_pmap similar to yielder.find_map
   //   parallel_map.list_find_pmap similar to list.find_map,
   // which stop the works after finding the first Ok value.
 
@@ -57,12 +57,12 @@ pub fn main() {
     }
   }
 
-  iterator_input
-  |> iterator.find_map(find_map_func)
+  yielder_input
+  |> yielder.find_map(find_map_func)
 
   // can be rewritten as
-  iterator_input
-  |> parallel_map.iterator_find_pmap(find_map_func, WorkerAmount(16), 100)
+  yielder_input
+  |> parallel_map.yielder_find_pmap(find_map_func, WorkerAmount(16), 100)
 
 
   list_input

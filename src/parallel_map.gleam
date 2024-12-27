@@ -1,8 +1,8 @@
 import gleam/erlang/atom
 import gleam/erlang/process
-import gleam/iterator.{type Iterator}
 import gleam/list
 import gleam/result
+import gleam/yielder.{type Yielder}
 import parallel_map/internal/task_repeater
 
 /// This type is used to specify the number of workers to spawn
@@ -25,70 +25,70 @@ fn worker_amount_to_int(worker_amount: WorkerAmount) -> Int {
 @external(erlang, "erlang", "system_info")
 fn do_erlang_system_info(item: atom.Atom) -> Int
 
-/// This function behaves similarly to gleam_stdlib's iterator.map
+/// This function behaves similarly to gleam/yielder's yielder.map
 ///
-/// Creates an iterator from an existing iterator and a transformation function
+/// Creates an yielder from an existing yielder and a transformation function
 ///
-/// Each element in the new iterator will be the result of calling the given
-/// function on the elements in the given iterator, with the resulting value
+/// Each element in the new yielder will be the result of calling the given
+/// function on the elements in the given yielder, with the resulting value
 /// wrapped in a Result
 ///
 /// If the timeout specified is exceeded while attempting
 /// to collect the result of the computation, the element will instead be Error(Nil)
 ///
-/// This function also differs from iterator.map in that it will spawn the workers
+/// This function also differs from yielder.map in that it will spawn the workers
 /// and perform the computation right when it is called,
-/// but it does not attempt to collect the result until the iterator is later run
-pub fn iterator_pmap(
-  input: Iterator(a),
+/// but it does not attempt to collect the result until the yielder is later run
+pub fn yielder_pmap(
+  input: Yielder(a),
   mapping_func: fn(a) -> b,
   num_workers: WorkerAmount,
   timeout_milliseconds: Int,
-) -> Iterator(Result(b, Nil)) {
+) -> Yielder(Result(b, Nil)) {
   let worker_amount = case worker_amount_to_int(num_workers) {
     x if x > 0 -> x
     _ -> panic as "number of workers must be greater than 0"
   }
 
   let #(worker_list, subject_list) =
-    iterator.repeatedly(fn() {
+    yielder.repeatedly(fn() {
       let new_subject = process.new_subject()
       let assert Ok(worker_subject) =
         task_repeater.new(new_subject, fn(x) { mapping_func(x) |> Ok })
 
       #(worker_subject, new_subject)
     })
-    |> iterator.take(worker_amount)
-    |> iterator.to_list()
+    |> yielder.take(worker_amount)
+    |> yielder.to_list()
     |> list.unzip
 
-  let worker_iterator =
+  let worker_yielder =
     worker_list
-    |> iterator.from_list
-    |> iterator.cycle
-  let subject_iterator =
+    |> yielder.from_list
+    |> yielder.cycle
+  let subject_yielder =
     subject_list
-    |> iterator.from_list
-    |> iterator.cycle
+    |> yielder.from_list
+    |> yielder.cycle
 
   let output_length =
-    iterator.zip(input, worker_iterator)
-    |> iterator.map(fn(x) {
+    yielder.zip(input, worker_yielder)
+    |> yielder.map(fn(x) {
       let #(input_value, worker) = x
       task_repeater.call(worker, input_value)
     })
-    |> iterator.length()
+    |> yielder.length()
 
-  subject_iterator
-  |> iterator.take(output_length)
-  |> iterator.map(fn(subject) {
+  subject_yielder
+  |> yielder.take(output_length)
+  |> yielder.map(fn(subject) {
     process.receive(subject, timeout_milliseconds)
     |> result.map_error(fn(_) { Nil })
     |> result.flatten()
   })
 }
 
-/// This function behaves similarly to gleam_stdlib's iterator.map
+/// This function behaves similarly to gleam_stdlib's yielder.map
 ///
 /// Returns a new list containing only the elements of the first list
 /// after the function has been applied to each one, with the resulting value
@@ -103,14 +103,14 @@ pub fn list_pmap(
   timeout_milliseconds: Int,
 ) -> List(Result(b, Nil)) {
   input
-  |> iterator.from_list
-  |> iterator_pmap(mapping_func, num_workers, timeout_milliseconds)
-  |> iterator.to_list
+  |> yielder.from_list
+  |> yielder_pmap(mapping_func, num_workers, timeout_milliseconds)
+  |> yielder.to_list
 }
 
-/// This function behaves similarly to gleam_stdlib's iterator.find_map
-pub fn iterator_find_pmap(
-  input: Iterator(a),
+/// This function behaves similarly to gleam_stdlib's yielder.find_map
+pub fn yielder_find_pmap(
+  input: Yielder(a),
   mapping_func: fn(a) -> Result(b, c),
   num_workers: WorkerAmount,
   timeout_milliseconds: Int,
@@ -121,40 +121,40 @@ pub fn iterator_find_pmap(
   }
 
   let #(worker_list, subject_list) =
-    iterator.repeatedly(fn() {
+    yielder.repeatedly(fn() {
       let new_subject = process.new_subject()
       let assert Ok(worker) = task_repeater.new(new_subject, mapping_func)
       #(worker, new_subject)
     })
-    |> iterator.take(worker_amount)
-    |> iterator.to_list()
+    |> yielder.take(worker_amount)
+    |> yielder.to_list()
     |> list.unzip
 
-  let worker_iterator =
+  let worker_yielder =
     worker_list
-    |> iterator.from_list
-    |> iterator.cycle
-  let subject_iterator =
+    |> yielder.from_list
+    |> yielder.cycle
+  let subject_yielder =
     subject_list
-    |> iterator.from_list
-    |> iterator.cycle
+    |> yielder.from_list
+    |> yielder.cycle
 
   let output_length =
-    iterator.zip(input, worker_iterator)
-    |> iterator.map(fn(x) {
+    yielder.zip(input, worker_yielder)
+    |> yielder.map(fn(x) {
       let #(input_value, worker) = x
       task_repeater.find_call(worker, input_value)
     })
-    |> iterator.length()
+    |> yielder.length()
 
   let close_workers = fn() {
     worker_list
     |> list.each(fn(worker) { process.send(worker, task_repeater.SetTerminate) })
   }
 
-  subject_iterator
-  |> iterator.take(output_length)
-  |> iterator.try_fold(Error(Nil), fn(_, subject) {
+  subject_yielder
+  |> yielder.take(output_length)
+  |> yielder.try_fold(Error(Nil), fn(_, subject) {
     case process.receive(subject, timeout_milliseconds) {
       Ok(Ok(value)) -> {
         close_workers()
@@ -175,6 +175,6 @@ pub fn list_find_pmap(
   timeout_milliseconds: Int,
 ) -> Result(b, Nil) {
   input
-  |> iterator.from_list
-  |> iterator_find_pmap(mapping_func, num_workers, timeout_milliseconds)
+  |> yielder.from_list
+  |> yielder_find_pmap(mapping_func, num_workers, timeout_milliseconds)
 }
