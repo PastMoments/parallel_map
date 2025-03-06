@@ -1,6 +1,6 @@
-import gleam/yielder
 import gleam/list
 import gleam/result
+import gleam/yielder
 import gleeunit
 import gleeunit/should
 import parallel_map.{MatchSchedulersOnline, WorkerAmount}
@@ -67,11 +67,7 @@ pub fn yielder_find_pmap_test() {
 
   let parallel_result =
     yielder_input
-    |> parallel_map.yielder_find_pmap(
-      find_map_func,
-      MatchSchedulersOnline,
-      100,
-    )
+    |> parallel_map.yielder_find_pmap(find_map_func, MatchSchedulersOnline, 100)
 
   should.equal(parallel_result, sequential_result)
   should.equal(parallel_result, Ok(1002))
