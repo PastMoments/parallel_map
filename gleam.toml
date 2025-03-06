@@ -1,6 +1,5 @@
 name = "parallel_map"
-version = "2.1.0"
-
+version = "3.0.0"
 
 description = "A simple parallel map library in Gleam"
 licences = ["Apache-2.0"]
@@ -13,12 +12,11 @@ internal_modules = [
   "parallel_map/internal/*"
 ]
 
-gleam = ">= 0.32.0"
-
 [dependencies]
-gleam_stdlib = ">= 0.39.0 and < 2.0.0"
 gleam_erlang = ">= 0.25.0 and < 1.0.0"
 gleam_otp = ">= 0.10.0 and < 1.0.0"
+gleam_yielder = ">= 1.1.0 and < 2.0.0"
+gleam_stdlib = ">= 0.50.0 and < 1.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

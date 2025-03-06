@@ -1,4 +1,4 @@
-import gleam/iterator
+import gleam/yielder
 import gleam/list
 import gleam/result
 import gleeunit
@@ -21,17 +21,17 @@ pub fn readme_list_test() {
   )
 }
 
-pub fn readme_iterator_test() {
+pub fn readme_yielder_test() {
   let map_func = fn(a: Int) -> Int { a * a }
-  let iterator_input = iterator.range(0, 1000)
+  let yielder_input = yielder.range(0, 1000)
   should.equal(
-    iterator_input
-      |> parallel_map.iterator_pmap(map_func, MatchSchedulersOnline, 100)
-      |> iterator.map(result.unwrap(_, -1))
-      |> iterator.to_list,
-    iterator_input
-      |> iterator.map(map_func)
-      |> iterator.to_list,
+    yielder_input
+      |> parallel_map.yielder_pmap(map_func, MatchSchedulersOnline, 100)
+      |> yielder.map(result.unwrap(_, -1))
+      |> yielder.to_list,
+    yielder_input
+      |> yielder.map(map_func)
+      |> yielder.to_list,
   )
 }
 
@@ -54,20 +54,20 @@ pub fn list_find_pmap_test() {
   should.equal(parallel_result, Ok(1002))
 }
 
-pub fn iterator_find_pmap_test() {
+pub fn yielder_find_pmap_test() {
   let find_map_func = fn(a: Int) -> Result(Int, Int) {
     case a {
       x if x > 500 -> Ok(x * 2)
       _ -> Error(a)
     }
   }
-  let iterator_input = iterator.range(0, 1000)
+  let yielder_input = yielder.range(0, 1000)
 
-  let sequential_result = iterator_input |> iterator.find_map(find_map_func)
+  let sequential_result = yielder_input |> yielder.find_map(find_map_func)
 
   let parallel_result =
-    iterator_input
-    |> parallel_map.iterator_find_pmap(
+    yielder_input
+    |> parallel_map.yielder_find_pmap(
       find_map_func,
       MatchSchedulersOnline,
       100,
