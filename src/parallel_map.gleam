@@ -17,7 +17,7 @@ fn worker_amount_to_int(worker_amount: WorkerAmount) -> Int {
   case worker_amount {
     WorkerAmount(amount) -> amount
     MatchSchedulersOnline ->
-      do_erlang_system_info(atom.create_from_string("schedulers_online"))
+      do_erlang_system_info(atom.create("schedulers_online"))
   }
 }
 

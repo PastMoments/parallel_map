@@ -2,7 +2,6 @@ import gleam/list
 import gleam/result
 import gleam/yielder
 import gleeunit
-import gleeunit/should
 import parallel_map.{MatchSchedulersOnline, WorkerAmount}
 
 pub fn main() {
@@ -12,27 +11,23 @@ pub fn main() {
 pub fn readme_list_test() {
   let map_func = fn(a: Int) -> Int { a * a }
   let list_input = list.range(0, 1000)
-  should.equal(
-    list_input
-      |> parallel_map.list_pmap(map_func, WorkerAmount(16), 100)
-      |> list.map(result.unwrap(_, -1)),
-    list_input
-      |> list.map(map_func),
-  )
+  assert list_input
+    |> parallel_map.list_pmap(map_func, WorkerAmount(16), 100)
+    |> list.map(result.unwrap(_, -1))
+    == list_input
+    |> list.map(map_func)
 }
 
 pub fn readme_yielder_test() {
   let map_func = fn(a: Int) -> Int { a * a }
   let yielder_input = yielder.range(0, 1000)
-  should.equal(
-    yielder_input
-      |> parallel_map.yielder_pmap(map_func, MatchSchedulersOnline, 100)
-      |> yielder.map(result.unwrap(_, -1))
-      |> yielder.to_list,
-    yielder_input
-      |> yielder.map(map_func)
-      |> yielder.to_list,
-  )
+  assert yielder_input
+    |> parallel_map.yielder_pmap(map_func, MatchSchedulersOnline, 100)
+    |> yielder.map(result.unwrap(_, -1))
+    |> yielder.to_list
+    == yielder_input
+    |> yielder.map(map_func)
+    |> yielder.to_list
 }
 
 pub fn list_find_pmap_test() {
@@ -50,8 +45,8 @@ pub fn list_find_pmap_test() {
     list_input
     |> parallel_map.list_find_pmap(find_map_func, WorkerAmount(16), 100)
 
-  should.equal(parallel_result, sequential_result)
-  should.equal(parallel_result, Ok(1002))
+  assert parallel_result == sequential_result
+  assert parallel_result == Ok(1002)
 }
 
 pub fn yielder_find_pmap_test() {
@@ -69,6 +64,6 @@ pub fn yielder_find_pmap_test() {
     yielder_input
     |> parallel_map.yielder_find_pmap(find_map_func, MatchSchedulersOnline, 100)
 
-  should.equal(parallel_result, sequential_result)
-  should.equal(parallel_result, Ok(1002))
+  assert parallel_result == sequential_result
+  assert parallel_result == Ok(1002)
 }

@@ -20,14 +20,11 @@ pub fn new(
 ) -> #(process.Pid, Subject(Message(input_type))) {
   let response = process.new_subject()
   let pid =
-    process.start(
-      running: fn() {
-        let main_subject = process.new_subject()
-        process.send(response, main_subject)
-        loop(State(reply_subject:, main_subject:, map_func:))
-      },
-      linked: True,
-    )
+    process.spawn(fn() {
+      let main_subject = process.new_subject()
+      process.send(response, main_subject)
+      loop(State(reply_subject:, main_subject:, map_func:))
+    })
   #(pid, process.receive_forever(response))
 }
 
