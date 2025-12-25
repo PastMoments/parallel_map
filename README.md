@@ -19,7 +19,7 @@ gleam add parallel_map
 import gleam/list
 import gleam/yielder
 import gleam/result
-import parallel_map.{MatchSchedulers, WorkerAmount}
+import parallel_map.{MatchSchedulersOnline, WorkerAmount}
 
 pub fn main() {
   let map_func = fn(a: Int) -> Int {a * a}
