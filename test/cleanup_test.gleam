@@ -1,4 +1,5 @@
 import gleam/erlang/process
+import gleam/int
 import gleam/list
 import gleam/yielder
 import parallel_map
@@ -47,7 +48,7 @@ pub fn find_map_early_cleanup_test() {
   let initial_process_count = do_erlang_system_info(ProcessCount)
   let counter = process.new_subject()
   let _ =
-    list.range(1, 50)
+    int.range(49, 0, [], list.prepend)
     |> parallel_map.list_find_pmap(
       fn(x) {
         let result = case x {

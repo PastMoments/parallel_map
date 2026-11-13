@@ -16,6 +16,7 @@ parallel execution after finding the first **Ok** value.
 gleam add parallel_map
 ```
 ```gleam
+import gleam/int
 import gleam/list
 import gleam/yielder
 import gleam/result
@@ -34,7 +35,7 @@ pub fn main() {
   |> parallel_map.yielder_pmap(map_func, WorkerAmount(16), 100)
   |> yielder.map(result.unwrap(_, -1))
 
-  let list_input = list.range(0, 1000)
+  let list_input = int.range(999, -1, [], list.prepend)
 
   list_input
   |> list.map(map_func)

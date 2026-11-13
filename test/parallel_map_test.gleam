@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/list
 import gleam/result
 import gleam/yielder
@@ -10,7 +11,7 @@ pub fn main() {
 
 pub fn readme_list_test() {
   let map_func = fn(a: Int) -> Int { a * a }
-  let list_input = list.range(0, 1000)
+  let list_input = int.range(999, -1, [], list.prepend)
   assert list_input
     |> parallel_map.list_pmap(map_func, WorkerAmount(16), 100)
     |> list.map(result.unwrap(_, -1))
@@ -37,7 +38,7 @@ pub fn list_find_pmap_test() {
       _ -> Error(a)
     }
   }
-  let list_input = list.range(0, 1000)
+  let list_input = int.range(999, -1, [], list.prepend)
 
   let sequential_result = list_input |> list.find_map(find_map_func)
 
